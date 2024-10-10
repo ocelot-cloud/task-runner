@@ -21,7 +21,7 @@ func TestFrontend() {
 }
 ```
 
-The idea is to write simple functions like this and build a CLI tool, e.g., by using [cobra](https://github.com/spf13/cobra), to call these functions. The final use of the CLI tool might look like this:
+The idea is to write simple functions like this and build a CLI tool, e.g., by using [cobra](https://github.com/spf13/cobra), to call these functions. The final use of the CLI tool might look like this: 
 
 ```bash
 go build

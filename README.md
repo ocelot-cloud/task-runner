@@ -28,7 +28,7 @@ go build
 ./my-task-runner test frontend
 ```
 
-This approach helps you create a modern and scalable CI infrastructure. Here is an example of how to initialize the tool in the main function:
+This approach helps you create a modern and scalable CI infrastructure. Here is an example of how to initialize the tool in the main function: 
 
 ```go
 func main() {

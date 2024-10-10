@@ -1,6 +1,15 @@
 ### Task-Runner
 
-Handling CI-related tasks such as building, testing, and deploying can be automated using bash scripts, but these can quickly get messy. Managing multiple processes, handling cleanup, aborting on failure, adding pretty colored output, and more can lead to complex bash code. That's why Task-Runner was created: a simple, open source tool to replace bash scripts with cleaner, more maintainable CI logic written in Golang. Here's a sample usage:
+Handling CI-related tasks such as building, testing, and deploying can be automated using bash scripts, but these can quickly get messy. Managing multiple processes, handling cleanup, aborting on failure, adding pretty colored output, and more can lead to complex bash code. That's why Task-Runner was created: a simple, open source tool to replace bash scripts with cleaner, more maintainable CI logic written in Golang. 
+
+###  Installation
+
+```bash
+go get github.com/ocelot-cloud/task-runner
+go mod tidy
+```
+
+### Usage Example
 
 ```go
 var backendDir = "../backend"

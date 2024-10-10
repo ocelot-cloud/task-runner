@@ -16,16 +16,16 @@ var frontendDir = "../frontend"
 var acceptanceTestsDir = "../acceptance"
 
 func TestFrontend() {
-	cli.PrintTaskDescription("Testing Integrated Components")
-	defer cli.Cleanup() // shuts down the daemon processes at the end
-	cli.ExecuteInDir(backendDir, "go build")
-	cli.StartDaemon(backendDir, "./backend")
-	cli.WaitUntilPortIsReady("8080")
+	tr.PrintTaskDescription("Testing Integrated Components")
+	defer tr.Cleanup() // shuts down the daemon processes at the end
+	tr.ExecuteInDir(backendDir, "go build")
+	tr.StartDaemon(backendDir, "./backend")
+	tr.WaitUntilPortIsReady("8080")
 
-	cli.ExecuteInDir(frontendDir, "npm install")
-	cli.StartDaemon(frontendDir, "npm run serve", "VITE_APP_PROFILE=TEST")
-	cli.WaitForWebPageToBeReady("http://localhost:8081/")
-	cli.ExecuteInDir(acceptanceTestsDir, cypressCommand, "CYPRESS_PROFILE=TEST")
+	tr.ExecuteInDir(frontendDir, "npm install")
+	tr.StartDaemon(frontendDir, "npm run serve", "VITE_APP_PROFILE=TEST")
+	tr.WaitForWebPageToBeReady("http://localhost:8081/")
+	tr.ExecuteInDir(acceptanceTestsDir, cypressCommand, "CYPRESS_PROFILE=TEST")
 }
 ```
 
@@ -43,18 +43,18 @@ func main() {
 	// Optional. If you enable this, when a process hangs, you can press "CTRL" + "C" which will 
 	// call the cleanup function and try to gracefully shut down the process. If that does not work, 
 	// it will forcefully exit the program.
-	go cli.HandleSignals()
+	go tr.HandleSignals()
 
 	// Optional. Is applied to each command called.
-    cli.DefaultEnvs = []string{"LOG_LEVEL=DEBUG"}
+    tr.DefaultEnvs = []string{"LOG_LEVEL=DEBUG"}
 
     // Optional. Is called as sub-function whenever tr.Cleanup is called
-	cli.CustomCleanupFunc = MyCustomCleanupFunction 
+	tr.CustomCleanupFunc = MyCustomCleanupFunction
 
 	// Sample usage of cobra library
 	if err := rootCmd.Execute(); err != nil {
-		cli.ColoredPrintln("\nError during execution: %v\n", err)
-		cli.CleanupAndExitWithError()
+		tr.ColoredPrintln("\nError during execution: %v\n", err)
+		tr.CleanupAndExitWithError()
 	}
 }
 ```

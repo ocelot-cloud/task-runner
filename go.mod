@@ -1,4 +1,4 @@
-module tr
+module github.com/ocelot-cloud/task-runner
 
 go 1.22.8
 

@@ -48,7 +48,7 @@ The tool has only been tested on Linux.
 
 ### License
 
-This project is licensed under the [Zero-Clause BSD](./LICENSE) license.
+This project is licensed under the [Zero-Clause BSD](./LICENSE) license. 
 
 ### About
 

@@ -6,7 +6,6 @@ Handling CI-related tasks such as building, testing, and deploying can be automa
 
 ```bash
 go get github.com/ocelot-cloud/task-runner
-go mod tidy
 ```
 
 ### Usage Example
@@ -18,7 +17,7 @@ var acceptanceTestsDir = "../acceptance"
 
 func TestFrontend() {
 	cli.PrintTaskDescription("Testing Integrated Components")
-	defer cli.Cleanup()
+	defer cli.Cleanup() // shuts down the daemon processes at the end
 	cli.ExecuteInDir(backendDir, "go build")
 	cli.StartDaemon(backendDir, "./backend")
 	cli.WaitUntilPortIsReady("8080")
@@ -41,11 +40,18 @@ This approach helps you create a modern and scalable CI infrastructure. Here is 
 
 ```go
 func main() {
-    // Optional lines:
-	go cli.HandleSignals() // If you enable this, when a process hangs, you can press "CTRL" + "C" which will call the cleanup function and try to gracefully shut down the process. If that does not work, it will forcefully exit the program.
-    cli.DefaultEnvs = []string{"LOG_LEVEL=DEBUG"} // is applied to each command called
-	cli.CustomCleanupFunc = MyCustomCleanupFunction // is called whenever tr.Cleanup is called
+	// Optional. If you enable this, when a process hangs, you can press "CTRL" + "C" which will 
+	// call the cleanup function and try to gracefully shut down the process. If that does not work, 
+	// it will forcefully exit the program.
+	go cli.HandleSignals()
 
+	// Optional. Is applied to each command called.
+    cli.DefaultEnvs = []string{"LOG_LEVEL=DEBUG"}
+
+    // Optional. Is called as sub-function whenever tr.Cleanup is called
+	cli.CustomCleanupFunc = MyCustomCleanupFunction 
+
+	// Sample usage of cobra library
 	if err := rootCmd.Execute(); err != nil {
 		cli.ColoredPrintln("\nError during execution: %v\n", err)
 		cli.CleanupAndExitWithError()

@@ -10,7 +10,7 @@ import (
 )
 
 var CustomCleanupFunc = func() {
-	println("For your information: Custom cleanup method not set.")
+	// Do nothing. This function is meant to be overridden by the user if needed.
 }
 
 var idsOfDaemonProcessesCreatedDuringThisRun []int

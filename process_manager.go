@@ -21,7 +21,7 @@ func StartDaemon(dir string, commandStr string, envs ...string) {
 
 	appendEnvsToCommand(cmd, envs)
 
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	setProcessGroup(cmd)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -67,12 +67,8 @@ func killDaemonProcessesCreateDuringThisRun() {
 
 	for _, processID := range idsOfDaemonProcessesCreatedDuringThisRun {
 		fmt.Printf("  Killing process with ID '%v'\n", processID)
-		processGroupID, err := syscall.Getpgid(processID)
-		if err != nil {
-			log.Fatalf("Failed to get process group ID of process ID '%v' because of error: %v\n", processID, err)
-		}
-		if err := syscall.Kill(-processGroupID, syscall.SIGKILL); err != nil {
-			log.Fatalf("Failed to kill process group ID '%v' because of error: %v of \n", processID, err)
+		if err := killProcessGroup(processID); err != nil {
+			log.Fatalf("Failed to kill process with ID '%v' because of error: %v\n", processID, err)
 		}
 	}
 	idsOfDaemonProcessesCreatedDuringThisRun = make([]int, 0)

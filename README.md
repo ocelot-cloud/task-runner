@@ -1,8 +1,8 @@
 ### Task-Runner
 
-Handling CI-related tasks such as building, testing, and deploying can be automated using bash scripts, but these can quickly get messy. Managing multiple processes, handling cleanup, aborting on failure, adding pretty colored output, and more can lead to complex bash code. That's why Task-Runner was created: a simple, open source tool to replace bash scripts with cleaner, more maintainable CI logic written in Golang. 
+Handling CI-related tasks such as building, testing, and deploying can be automated using bash scripts, but these can quickly get messy. Managing multiple processes, handling cleanup, aborting on failure, adding pretty colored output, and more can lead to complex bash code. That's why Task-Runner was created: a simple, open source tool to replace bash scripts with cleaner, more maintainable code written in Go.
 
-###  Installation
+### Installation
 
 ```bash
 go get github.com/ocelot-cloud/task-runner
@@ -16,16 +16,16 @@ var frontendDir = "../frontend"
 var acceptanceTestsDir = "../acceptance"
 
 func TestFrontend() {
-	tr.PrintTaskDescription("Testing Integrated Components")
-	defer tr.Cleanup() // shuts down the daemon processes at the end
-	tr.ExecuteInDir(backendDir, "go build")
-	tr.StartDaemon(backendDir, "./backend")
-	tr.WaitUntilPortIsReady("8080")
+    tr.PrintTaskDescription("Testing Integrated Components")
+    defer tr.Cleanup() // shuts down the daemon processes at the end
+    tr.ExecuteInDir(backendDir, "go build")
+    tr.StartDaemon(backendDir, "./backend")
+    tr.WaitUntilPortIsReady("8080")
 
-	tr.ExecuteInDir(frontendDir, "npm install")
-	tr.StartDaemon(frontendDir, "npm run serve", "VITE_APP_PROFILE=TEST")
-	tr.WaitForWebPageToBeReady("http://localhost:8081/")
-	tr.ExecuteInDir(acceptanceTestsDir, cypressCommand, "CYPRESS_PROFILE=TEST")
+    tr.ExecuteInDir(frontendDir, "npm install")
+    tr.StartDaemon(frontendDir, "npm run serve", "VITE_APP_PROFILE=TEST")
+    tr.WaitForWebPageToBeReady("http://localhost:8081/")
+    tr.ExecuteInDir(acceptanceTestsDir, cypressCommand, "CYPRESS_PROFILE=TEST")
 }
 ```
 
@@ -40,31 +40,38 @@ This approach helps you create a modern and scalable CI infrastructure. Here is 
 
 ```go
 func main() {
-	// Optional. If you enable this, when a process hangs, you can press "CTRL" + "C" which will 
-	// call the cleanup function and try to gracefully shut down the process. If that does not work, 
-	// it will forcefully exit the program.
-	go tr.HandleSignals()
+    // Optional. If you enable this, when a process hangs, you can press "CTRL" + "C" which will 
+    // call the cleanup function and try to gracefully shut down the process. If that does not work, 
+    // it will forcefully exit the program.
+    go tr.HandleSignals()
 
-	// Optional. Is applied to each command called.
+    // Optional. Environment variables are applied to each command called.
     tr.DefaultEnvs = []string{"LOG_LEVEL=DEBUG"}
 
-    // Optional. Is called as sub-function whenever tr.Cleanup is called
-	tr.CustomCleanupFunc = MyCustomCleanupFunction
+    // Optional. Is called as sub-function whenever tr.Cleanup() is called. 
+    // Can be used to add custom post-task cleanup functionality.
+    tr.CustomCleanupFunc = MyCustomCleanupFunction
 
-	// Sample usage of cobra library
-	if err := rootCmd.Execute(); err != nil {
-		tr.ColoredPrintln("\nError during execution: %v\n", err)
-		tr.CleanupAndExitWithError()
-	}
+    // Sample usage of cobra library
+    if err := rootCmd.Execute(); err != nil {
+        tr.ColoredPrintln("\nError during execution: %v\n", err)
+        tr.CleanupAndExitWithError()
+    }
+}
+
+var rootCmd = &cobra.Command{
+    Use:   "app",
+    Short: "some brief description",
+    Run: func(cmd *cobra.Command, args []string) {
+        fmt.Println("hello world")
+    },
 }
 ```
 
-The tool has only been tested on Linux.
+### Compatibility
+
+The tool has been tested on Linux and Windows.
 
 ### License
 
-This project is licensed under the [Zero-Clause BSD](./LICENSE) license. 
-
-### About
-
-This project is a side-product of [Ocelot-Cloud](https://github.com/ocelot-cloud/ocelot-cloud).
+This project is open source licensed under the [Zero-Clause BSD](./LICENSE) license.

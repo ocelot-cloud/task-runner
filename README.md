@@ -70,7 +70,14 @@ var rootCmd = &cobra.Command{
 
 ### Compatibility
 
-The tool has been tested on Linux and Windows.
+The tool has been tested under Linux and Windows. In order to be independent of the Linux tools `cp`, `rm`, `mkdir` and `move`, which are quite useful for handling files and folders on the system, operating system independent functions have been implemented:
+
+```
+tr.Copy(...)
+tr.Remove(...)
+tr.MakeDir(...)
+tr.Move(...)
+```
 
 ### License
 

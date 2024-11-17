@@ -20,12 +20,21 @@ var parentDir = getParentDir()
 func getParentDir() string {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		log.Fatal("failed to get current dir: %v", err)
+		log.Fatalf("failed to get current dir: %v", err)
 	}
 	return filepath.Dir(currentDir)
 }
 
 func ExecuteInDir(dir string, commandStr string, envs ...string) {
+	elapsedTimeStr, err := executeInDir(dir, commandStr, envs...)
+	ColoredPrintln(elapsedTimeStr)
+	if err != nil {
+		ColoredPrintln(" => %v", err)
+		CleanupAndExitWithError()
+	}
+}
+
+func executeInDir(dir string, commandStr string, envs ...string) (string, error) {
 	shortDir := strings.Replace(dir, parentDir, "", -1)
 	ColoredPrintln("\nIn directory '.%s', executing '%s'\n", shortDir, commandStr)
 
@@ -46,21 +55,26 @@ func ExecuteInDir(dir string, commandStr string, envs ...string) {
 	output := stdoutBuf.String() + stderrBuf.String()
 	elapsedTimeSummary := fmt.Sprintf("Time taken: %s seconds.", elapsedStr)
 	if err != nil {
-		ColoredPrintln(" => Command failed with error: %v; %s\n", err, elapsedTimeSummary)
-		CleanupAndExitWithError()
+		return elapsedTimeSummary, fmt.Errorf("command failed with error: %v", err)
 	} else {
-		if strings.Contains(output, "no test files") {
-			ColoredPrintln(" => Testing failed because no tests were found. %s\n", elapsedTimeSummary)
-			CleanupAndExitWithError()
-		} else if strings.Contains(commandStr, "go test") && !strings.Contains(output, "PASS:") && !containsOkLine(output) {
-			ColoredPrintln(" => Testing failed because no tests were actually executed; all tests were either skipped or not included. %s\n", elapsedTimeSummary)
-			CleanupAndExitWithError()
-		} else if strings.Contains(commandStr, "go test") && strings.Contains(output, "testing: warning: no tests to run") {
-			ColoredPrintln(" => Testing failed because no tests were actually executed. %s\n", elapsedTimeSummary)
-			CleanupAndExitWithError()
+		if strings.Contains(commandStr, "go test") {
+			return elapsedTimeSummary, checkGoTestOutput(output)
 		} else {
-			ColoredPrintln(" => Command successful. %s\n", elapsedTimeSummary)
+			ColoredPrintln(" => Command successful.")
+			return elapsedTimeSummary, nil
 		}
+	}
+}
+
+func checkGoTestOutput(output string) error {
+	if strings.Contains(output, "no test files") {
+		return fmt.Errorf("testing failed because no tests were found")
+	} else if strings.Contains(output, "no tests to run") {
+		return fmt.Errorf("testing failed because no tests were in test file")
+	} else if !strings.Contains(output, "PASS:") && !containsOkLine(output) {
+		return fmt.Errorf("testing failed because no tests were actually executed; all tests were either skipped or not included")
+	} else {
+		return nil
 	}
 }
 

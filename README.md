@@ -43,7 +43,7 @@ func main() {
     // Optional. If you enable this, when a process hangs, you can press "CTRL" + "C" which will 
     // call the cleanup function and try to gracefully shut down the process. If that does not work, 
     // it will forcefully exit the program.
-    go tr.HandleSignals()
+    tr.HandleSignals()
 
     // Optional. Environment variables are applied to each command called.
     tr.DefaultEnvs = []string{"LOG_LEVEL=DEBUG"}

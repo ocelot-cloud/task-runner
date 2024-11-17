@@ -18,7 +18,6 @@ var idsOfDaemonProcessesCreatedDuringThisRun []int
 func StartDaemon(dir string, commandStr string, envs ...string) {
 	var cmd *exec.Cmd
 	cmd = buildCommand(dir, commandStr)
-
 	appendEnvsToCommand(cmd, envs)
 
 	setProcessGroup(cmd)
@@ -30,6 +29,7 @@ func StartDaemon(dir string, commandStr string, envs ...string) {
 
 	if cmd.Process == nil {
 		fmt.Printf("Error: The process was not able to start properly.\n")
+		CleanupAndExitWithError()
 	} else {
 		idsOfDaemonProcessesCreatedDuringThisRun = append(idsOfDaemonProcessesCreatedDuringThisRun, cmd.Process.Pid)
 	}
@@ -87,10 +87,12 @@ func appendEnvsToCommand(cmd *exec.Cmd, envs []string) {
 var DefaultEnvs []string
 
 func HandleSignals() {
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	sig := <-sigChan
-	ColoredPrintln("\nReceived signal: %v. Initiating graceful shutdown...\n", sig)
-	Cleanup()
-	os.Exit(1)
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-sigChan
+		ColoredPrintln("\nReceived signal: %v. Initiating graceful shutdown...\n", sig)
+		Cleanup()
+		os.Exit(1)
+	}()
 }

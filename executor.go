@@ -161,3 +161,13 @@ func WaitForWebPageToBeReady(url string) {
 func PrintTaskDescription(text string) {
 	ColoredPrintln("\n=== %s ===\n", text)
 }
+
+func PromptForContinuation(prompt string) {
+	fmt.Printf("%s (y/N): ", prompt)
+	var response string
+	fmt.Scanln(&response)
+	if response != "y" && response != "Y" {
+		fmt.Println("Command aborted.")
+		os.Exit(0)
+	}
+}

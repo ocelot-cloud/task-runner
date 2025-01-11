@@ -33,3 +33,14 @@ func TestDirMove(t *testing.T) {
 	assert.True(t, checkIfExists("temp2"))
 	assert.True(t, checkIfExists("temp2/test.txt"))
 }
+
+func TestRename(t *testing.T) {
+	defer Remove(tmpDir)
+	MakeDir(tmpDir)
+	ExecuteInDir(tmpDir, "touch test.txt")
+	assert.True(t, checkIfExists(tmpDir+"/test.txt"))
+	assert.False(t, checkIfExists(tmpDir+"/test2.txt"))
+	Rename(tmpDir, "test.txt", "test2.txt")
+	assert.False(t, checkIfExists(tmpDir+"/test.txt"))
+	assert.True(t, checkIfExists(tmpDir+"/test2.txt"))
+}

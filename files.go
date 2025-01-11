@@ -105,3 +105,13 @@ func Move(src, dest string) {
 		CleanupAndExitWithError()
 	}
 }
+
+func Rename(dir, currentFileName, newFileName string) {
+	src := filepath.Join(dir, currentFileName)
+	dest := filepath.Join(dir, newFileName)
+	err := os.Rename(src, dest)
+	if err != nil {
+		ColoredPrintln("error renaming %s to %s: %v", src, dest, err)
+		CleanupAndExitWithError()
+	}
+}

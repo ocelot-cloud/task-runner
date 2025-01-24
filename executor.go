@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -148,14 +149,25 @@ func retryOperation(operation func() (bool, error), description, target string, 
 	CleanupAndExitWithError()
 }
 
-func WaitForWebPageToBeReady(url string) {
+func WaitForWebPageToBeReady(targetUrl string) {
 	retryOperation(func() (bool, error) {
-		response, err := http.Get(url)
+		parsedURL, err := url.Parse(targetUrl)
+		if err != nil {
+			return false, err
+		}
+
+		req, err := http.NewRequest("GET", targetUrl, nil)
+		if err != nil {
+			return false, err
+		}
+		req.Header.Set("Origin", parsedURL.Scheme+"://"+parsedURL.Host)
+
+		response, err := http.DefaultClient.Do(req)
 		if err == nil && response.StatusCode == 200 {
 			return true, nil
 		}
 		return false, err
-	}, "Index page", url, 30)
+	}, "Index page", targetUrl, 30)
 }
 
 func PrintTaskDescription(text string) {

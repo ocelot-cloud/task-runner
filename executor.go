@@ -167,7 +167,7 @@ func WaitForWebPageToBeReady(targetUrl string) {
 			return true, nil
 		}
 		return false, err
-	}, "Index page", targetUrl, 30)
+	}, "Index page", targetUrl, 60)
 }
 
 func PrintTaskDescription(text string) {

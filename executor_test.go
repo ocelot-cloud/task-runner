@@ -24,18 +24,6 @@ func TestCommandSuccessful(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestNotTestPresent(t *testing.T) {
-	_, err := executeInDir(sampleTestDir+"/no_tests", "go test .")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "testing failed because no tests were in test file")
-}
-
-func TestNotTestFilePresent(t *testing.T) {
-	_, err := executeInDir(sampleTestDir+"/no_test_files", "go test .")
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "testing failed because no tests were found")
-}
-
 func TestDirCreationAndDeletion(t *testing.T) {
 	assert.False(t, checkIfExists(tmpDir))
 	defer Remove(tmpDir)

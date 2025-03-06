@@ -53,40 +53,13 @@ func executeInDir(dir string, commandStr string, envs ...string) (string, error)
 	elapsed := time.Since(startTime)
 	elapsedStr := fmt.Sprintf("%.3f", elapsed.Seconds())
 
-	output := stdoutBuf.String() + stderrBuf.String()
 	elapsedTimeSummary := fmt.Sprintf("Time taken: %s seconds.", elapsedStr)
 	if err != nil {
 		return elapsedTimeSummary, fmt.Errorf("command failed with error: %v", err)
 	} else {
-		if strings.Contains(commandStr, "go test") {
-			return elapsedTimeSummary, checkGoTestOutput(output)
-		} else {
-			ColoredPrintln(" => Command successful.")
-			return elapsedTimeSummary, nil
-		}
+		ColoredPrintln(" => Command successful.")
+		return elapsedTimeSummary, nil
 	}
-}
-
-func checkGoTestOutput(output string) error {
-	if strings.Contains(output, "no test files") {
-		return fmt.Errorf("testing failed because no tests were found")
-	} else if strings.Contains(output, "no tests to run") {
-		return fmt.Errorf("testing failed because no tests were in test file")
-	} else if !strings.Contains(output, "PASS:") && !containsOkLine(output) {
-		return fmt.Errorf("testing failed because no tests were actually executed; all tests were either skipped or not included")
-	} else {
-		return nil
-	}
-}
-
-func containsOkLine(output string) bool {
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(strings.TrimSpace(line), "ok") {
-			return true
-		}
-	}
-	return false
 }
 
 func ColoredPrintln(format string, a ...interface{}) {

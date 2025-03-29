@@ -3,7 +3,7 @@ package tr
 import (
 	"bytes"
 	"fmt"
-	"github.com/mattn/go-shellwords"
+	"github.com/ocelot-cloud/task-runner/shellwords"
 	"io"
 	"log"
 	"net"

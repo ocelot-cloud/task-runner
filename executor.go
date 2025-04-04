@@ -144,7 +144,7 @@ func WaitForWebPageToBeReady(targetUrl string) {
 }
 
 func PrintTaskDescription(text string) {
-	ColoredPrintln("\n=== %s ===\n", text)
+	ColoredPrintln("\n==== %s ====\n", text)
 }
 
 func PromptForContinuation(prompt string) {

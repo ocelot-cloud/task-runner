@@ -61,6 +61,10 @@ func executeInDir(dir string, commandStr string, envs ...string) (string, error)
 	}
 }
 
+func Execute(commandStr string, envs ...string) {
+	ExecuteInDir(".", commandStr, envs...)
+}
+
 func ColoredPrintln(format string, a ...interface{}) {
 	colorReset := "\033[0m"
 	colorCode := "\033[31m"

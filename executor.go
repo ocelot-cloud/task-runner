@@ -3,14 +3,13 @@ package tr
 import (
 	"bytes"
 	"fmt"
-	"github.com/ocelot-cloud/task-runner/shellwords"
+	"github.com/ocelot-cloud/task-runner/platform"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -39,7 +38,7 @@ func executeInDir(dir string, commandStr string, envs ...string) (string, error)
 	shortDir := strings.Replace(dir, parentDir, "", -1)
 	ColoredPrintln("\nIn directory '.%s', executing '%s'\n", shortDir, commandStr)
 
-	cmd := buildCommand(dir, commandStr)
+	cmd := platform.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
 
 	var stdoutBuf, stderrBuf bytes.Buffer
@@ -62,34 +61,14 @@ func executeInDir(dir string, commandStr string, envs ...string) (string, error)
 	}
 }
 
+func Execute(commandStr string, envs ...string) {
+	ExecuteInDir(".", commandStr, envs...)
+}
+
 func ColoredPrintln(format string, a ...interface{}) {
 	colorReset := "\033[0m"
 	colorCode := "\033[31m"
 	fmt.Printf(colorCode+format+"\n"+colorReset, a...)
-}
-
-func buildCommand(dir string, commandStr string) *exec.Cmd {
-	parts, err := parseCommand(commandStr)
-	if err != nil {
-		ColoredPrintln("error parsing command: %v", err)
-		CleanupAndExitWithError()
-	}
-	if len(parts) == 0 {
-		ColoredPrintln("error, no command found in commandStr: %v", err)
-		CleanupAndExitWithError()
-	}
-	command := parts[0]
-	args := parts[1:]
-
-	cmd := exec.Command(command, args...)
-	cmd.Dir = dir
-
-	return cmd
-}
-
-func parseCommand(command string) ([]string, error) {
-	parser := shellwords.NewParser()
-	return parser.Parse(command)
 }
 
 func WaitUntilPortIsReady(port string) {

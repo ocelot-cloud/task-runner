@@ -2,7 +2,7 @@ package tr
 
 import (
 	"fmt"
-	"github.com/ocelot-cloud/task-runner/platform"
+	"github.com/ocelot-cloud/task-runner/tr/platform"
 	"log"
 	"os"
 	"os/exec"

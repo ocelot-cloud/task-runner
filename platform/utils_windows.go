@@ -1,6 +1,6 @@
 //go:build windows
 
-package tr
+package platform
 
 import (
 	"os"

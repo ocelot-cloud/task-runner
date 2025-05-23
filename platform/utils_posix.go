@@ -1,13 +1,13 @@
 //go:build !windows
 
-package tr
+package platform
 
 import (
 	"os"
 	"os/exec"
 )
 
-func buildCommand(dir, commandStr string) *exec.Cmd {
+func BuildCommand(dir, commandStr string) *exec.Cmd {
 	shell := os.Getenv("SHELL")
 	if shell == "" {
 		shell = "bash"

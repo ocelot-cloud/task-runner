@@ -3,6 +3,7 @@ package tr
 import (
 	"bytes"
 	"fmt"
+	"github.com/ocelot-cloud/task-runner/platform"
 	"io"
 	"log"
 	"net"
@@ -37,7 +38,7 @@ func executeInDir(dir string, commandStr string, envs ...string) (string, error)
 	shortDir := strings.Replace(dir, parentDir, "", -1)
 	ColoredPrintln("\nIn directory '.%s', executing '%s'\n", shortDir, commandStr)
 
-	cmd := buildCommand(dir, commandStr)
+	cmd := platform.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
 
 	var stdoutBuf, stderrBuf bytes.Buffer

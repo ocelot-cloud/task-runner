@@ -2,6 +2,7 @@ package tr
 
 import (
 	"fmt"
+	"github.com/ocelot-cloud/task-runner/platform"
 	"log"
 	"os"
 	"os/exec"
@@ -17,7 +18,7 @@ var idsOfDaemonProcessesCreatedDuringThisRun []int
 
 func StartDaemon(dir string, commandStr string, envs ...string) {
 	var cmd *exec.Cmd
-	cmd = buildCommand(dir, commandStr)
+	cmd = platform.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
 
 	setProcessGroup(cmd)

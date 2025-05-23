@@ -1,7 +1,7 @@
 //go:build windows
 // +build windows
 
-package tr
+package platform
 
 import (
 	"fmt"
@@ -10,13 +10,13 @@ import (
 	"syscall"
 )
 
-func setProcessGroup(cmd *exec.Cmd) {
+func SetProcessGroup(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP,
 	}
 }
 
-func killProcessGroup(processID int) error {
+func KillProcessGroup(processID int) error {
 	process, err := os.FindProcess(processID)
 	if err != nil {
 		return fmt.Errorf("Failed to find process with ID '%v' because of error: %v", processID, err)

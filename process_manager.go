@@ -21,7 +21,7 @@ func StartDaemon(dir string, commandStr string, envs ...string) {
 	cmd = platform.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
 
-	setProcessGroup(cmd)
+	platform.SetProcessGroup(cmd)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -68,7 +68,7 @@ func killDaemonProcessesCreateDuringThisRun() {
 
 	for _, processID := range idsOfDaemonProcessesCreatedDuringThisRun {
 		fmt.Printf("  Killing process with ID '%v'\n", processID)
-		if err := killProcessGroup(processID); err != nil {
+		if err := platform.KillProcessGroup(processID); err != nil {
 			log.Fatalf("Failed to kill process with ID '%v' because of error: %v\n", processID, err)
 		}
 	}

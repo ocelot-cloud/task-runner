@@ -1,7 +1,7 @@
 //go:build darwin
 // +build darwin
 
-package tr
+package platform
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"syscall"
 )
 
-func setProcessGroup(cmd *exec.Cmd) {
+func SetProcessGroup(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 }
 
-func killProcessGroup(processID int) error {
+func KillProcessGroup(processID int) error {
 	pgid, err := syscall.Getpgid(processID)
 	if err != nil {
 		return fmt.Errorf("Failed to get process group ID of process ID '%v' because of error: %v", processID, err)

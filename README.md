@@ -86,6 +86,3 @@ Please read the [Community](https://ocelot-cloud.org/docs/community/) articles f
 ### License
 
 This project is licensed under the 0BSD License - see the [LICENSE](LICENSE) file for details.
-
-This project includes code from go-shellwords v1.0.12 (https://github.com/mattn/go-shellwords),
-licensed under the MIT License. See shellwords/LICENSE.

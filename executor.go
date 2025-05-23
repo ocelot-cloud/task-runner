@@ -3,14 +3,12 @@ package tr
 import (
 	"bytes"
 	"fmt"
-	"github.com/ocelot-cloud/task-runner/shellwords"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -66,30 +64,6 @@ func ColoredPrintln(format string, a ...interface{}) {
 	colorReset := "\033[0m"
 	colorCode := "\033[31m"
 	fmt.Printf(colorCode+format+"\n"+colorReset, a...)
-}
-
-func buildCommand(dir string, commandStr string) *exec.Cmd {
-	parts, err := parseCommand(commandStr)
-	if err != nil {
-		ColoredPrintln("error parsing command: %v", err)
-		CleanupAndExitWithError()
-	}
-	if len(parts) == 0 {
-		ColoredPrintln("error, no command found in commandStr: %v", err)
-		CleanupAndExitWithError()
-	}
-	command := parts[0]
-	args := parts[1:]
-
-	cmd := exec.Command(command, args...)
-	cmd.Dir = dir
-
-	return cmd
-}
-
-func parseCommand(command string) ([]string, error) {
-	parser := shellwords.NewParser()
-	return parser.Parse(command)
 }
 
 func WaitUntilPortIsReady(port string) {

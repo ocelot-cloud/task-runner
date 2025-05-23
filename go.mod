@@ -1,6 +1,6 @@
 module github.com/ocelot-cloud/task-runner
 
-go 1.22.8
+go 1.24.1
 
 require github.com/stretchr/testify v1.9.0
 

@@ -1,6 +1,8 @@
 package tr
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCleanup(t *testing.T) {
 	StartDaemon(".", "sleep 10")

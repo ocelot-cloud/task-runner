@@ -2,7 +2,7 @@ package tr
 
 import (
 	"fmt"
-	"github.com/ocelot-cloud/task-runner/tr/platform"
+	platform2 "github.com/ocelot-cloud/task-runner/platform"
 	"log"
 	"os"
 	"os/exec"
@@ -18,10 +18,10 @@ var idsOfDaemonProcessesCreatedDuringThisRun []int
 
 func StartDaemon(dir string, commandStr string, envs ...string) {
 	var cmd *exec.Cmd
-	cmd = platform.BuildCommand(dir, commandStr)
+	cmd = platform2.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
 
-	platform.SetProcessGroup(cmd)
+	platform2.SetProcessGroup(cmd)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -68,7 +68,7 @@ func killDaemonProcessesCreateDuringThisRun() {
 
 	for _, processID := range idsOfDaemonProcessesCreatedDuringThisRun {
 		fmt.Printf("  Killing process with ID '%v'\n", processID)
-		if err := platform.KillProcessGroup(processID); err != nil {
+		if err := platform2.KillProcessGroup(processID); err != nil {
 			log.Fatalf("Failed to kill process with ID '%v' because of error: %v\n", processID, err)
 		}
 	}

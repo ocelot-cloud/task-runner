@@ -3,7 +3,7 @@ package tr
 import (
 	"bytes"
 	"fmt"
-	"github.com/ocelot-cloud/task-runner/tr/platform"
+	"github.com/ocelot-cloud/task-runner/platform"
 	"io"
 	"log"
 	"net"

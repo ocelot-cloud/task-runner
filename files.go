@@ -24,6 +24,12 @@ func Copy(srcDir, fileName, destFolder string) {
 }
 
 func copyFile(src, dest string) {
+	info, err := os.Stat(src)
+	if err != nil {
+		ColoredPrintln("error stating %s: %v", src, err)
+		CleanupAndExitWithError()
+	}
+
 	input, err := os.Open(src)
 	if err != nil {
 		ColoredPrintln("error opening %s: %v", src, err)
@@ -32,13 +38,13 @@ func copyFile(src, dest string) {
 	defer input.Close()
 
 	destDir := filepath.Dir(dest)
-	err = os.MkdirAll(destDir, 0755)
+	err = os.MkdirAll(destDir, 0700)
 	if err != nil {
 		ColoredPrintln("error creating directory %s: %v", destDir, err)
 		CleanupAndExitWithError()
 	}
 
-	output, err := os.Create(dest)
+	output, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
 	if err != nil {
 		ColoredPrintln("error creating %s: %v", dest, err)
 		CleanupAndExitWithError()
@@ -50,10 +56,18 @@ func copyFile(src, dest string) {
 		ColoredPrintln("error copying from %s to %s: %v", src, dest, err)
 		CleanupAndExitWithError()
 	}
+
+	_ = os.Chmod(dest, info.Mode())
 }
 
 func copyDir(srcDir, destDir string) {
-	err := os.MkdirAll(destDir, 0755)
+	srcInfo, err := os.Stat(srcDir)
+	if err != nil {
+		ColoredPrintln("error stating %s: %v", srcDir, err)
+		CleanupAndExitWithError()
+	}
+
+	err = os.MkdirAll(destDir, srcInfo.Mode())
 	if err != nil {
 		ColoredPrintln("error creating directory %s: %v", destDir, err)
 		CleanupAndExitWithError()
@@ -75,6 +89,8 @@ func copyDir(srcDir, destDir string) {
 			copyFile(srcPath, destPath)
 		}
 	}
+
+	_ = os.Chmod(destDir, srcInfo.Mode())
 }
 
 func Remove(paths ...string) {
@@ -91,7 +107,7 @@ func Remove(paths ...string) {
 }
 
 func MakeDir(dir string) {
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0700)
 	if err != nil {
 		ColoredPrintln("Error creating %s: %v", dir, err)
 		CleanupAndExitWithError()

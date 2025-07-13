@@ -23,17 +23,17 @@ func (t *TaskRunner) retryOperation(operation func() (bool, error), description,
 	for attempt < maxAttempts {
 		success, err := operation()
 		if success && err == nil {
-			Log.Info("%s was requested successfully at %s", description, target)
+			t.Log.Info("%s was requested successfully at %s", description, target)
 			return
 		} else {
 			if attempt%5 == 0 {
-				Log.Info("attempt %v/%v: %s is not yet reachable at %s. error: %v. Trying again...", attempt, maxAttempts, description, target, err)
+				t.Log.Info("attempt %v/%v: %s is not yet reachable at %s. error: %v. Trying again...", attempt, maxAttempts, description, target, err)
 			}
 			attempt++
 			time.Sleep(1 * time.Second)
 		}
 	}
-	Log.Error("error: %s could not be reached in time at %s. Cleanup and exit...", description, target)
+	t.Log.Error("error: %s could not be reached in time at %s. Cleanup and exit...", description, target)
 	t.ExitWithError()
 }
 

@@ -21,7 +21,7 @@ func (t *TaskRunner) StartDaemon(dir, commandStr string, envs ...string) {
 	err := cmd.Start()
 
 	if cmd.Process == nil {
-		Log.Error("error - the process was not able to start properly.")
+		t.Log.Error("error - the process was not able to start properly.")
 		t.exitWithError()
 		return
 	}
@@ -29,25 +29,25 @@ func (t *TaskRunner) StartDaemon(dir, commandStr string, envs ...string) {
 	t.Config.idsOfDaemonProcessesCreated = append(t.Config.idsOfDaemonProcessesCreated, cmd.Process.Pid)
 
 	if err != nil {
-		Log.Error("Command: '%s' -> failed with error: %v", commandStr, err)
+		t.Log.Error("Command: '%s' -> failed with error: %v", commandStr, err)
 		t.exitWithError()
 		return
 	}
 
-	Log.Info("started daemon with ID '%v' using command '%s'", cmd.Process.Pid, commandStr)
+	t.Log.Info("started daemon with ID '%v' using command '%s'", cmd.Process.Pid, commandStr)
 
 	go func() {
 		if err := cmd.Wait(); err != nil {
-			Log.Error("command: '%s' -> reason of stopping: %v", commandStr, err)
+			t.Log.Error("command: '%s' -> reason of stopping: %v", commandStr, err)
 		} else {
-			Log.Info("command: '%s' -> stopped through casual termination", commandStr)
+			t.Log.Info("command: '%s' -> stopped through casual termination", commandStr)
 		}
 	}()
 }
 
 func (t *TaskRunner) Cleanup() {
 	if t.Config.ShowCleanupOutput {
-		Log.Info("Cleanup method called.")
+		t.Log.Info("Cleanup method called.")
 	}
 	t.killDaemonProcessesCreateDuringThisRun()
 	if t.Config.CleanupFunc != nil {
@@ -75,11 +75,11 @@ func (t *TaskRunner) killDaemonProcessesCreateDuringThisRun() {
 	if len(t.Config.idsOfDaemonProcessesCreated) == 0 {
 		return
 	}
-	Log.Info("Killing daemon processes")
+	t.Log.Info("Killing daemon processes")
 	for _, pid := range t.Config.idsOfDaemonProcessesCreated {
-		Log.Info("  Killing process with ID '%v'", pid)
+		t.Log.Info("  Killing process with ID '%v'", pid)
 		if err := platform.KillProcessGroup(pid); err != nil {
-			Log.Error("Failed to kill process with ID '%v' because of error: %v", pid, err)
+			t.Log.Error("Failed to kill process with ID '%v' because of error: %v", pid, err)
 		}
 	}
 	t.Config.idsOfDaemonProcessesCreated = nil
@@ -111,7 +111,7 @@ func (t *TaskRunner) EnableAbortForKeystrokeControlPlusC() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 		sig := <-sigChan
-		Log.Info("Received signal: %v. Initiating graceful shutdown...", sig)
+		t.Log.Info("Received signal: %v. Initiating graceful shutdown...", sig)
 		t.Cleanup()
 		os.Exit(1)
 	}()

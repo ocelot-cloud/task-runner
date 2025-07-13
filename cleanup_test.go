@@ -12,7 +12,6 @@ import (
 )
 
 func TestCleanup(t *testing.T) {
-	tr := GetTaskRunner()
 	tr.StartDaemon(".", "sleep 10")
 	tr.Cleanup()
 	assertThatNoProcessesSurvived([]string{"sleep 10"})
@@ -33,7 +32,7 @@ func assertThatNoProcessesSurvived(processes []string) {
 				break
 			}
 			if i == 4 {
-				Log.Error("the daemon process was not killed after tests were completed")
+				tr.Log.Error("the daemon process was not killed after tests were completed")
 				tr.ExitWithError()
 			}
 			time.Sleep(1 * time.Second)

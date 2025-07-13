@@ -22,11 +22,13 @@ func GetTaskRunner() *TaskRunner {
 			idsOfDaemonProcessesCreated: []int{},
 			parentDir:                   getParentDir(),
 		},
+		Log: consoleLogger{},
 	}
 }
 
 type TaskRunner struct {
 	Config *Config
+	Log    logger
 }
 
 type Config struct {
@@ -48,16 +50,16 @@ func getParentDir() string {
 
 func (t *TaskRunner) ExecuteInDir(dir string, commandStr string, envs ...string) {
 	elapsedTimeStr, err := t.executeInDir(dir, commandStr, envs...)
-	Log.Info(elapsedTimeStr)
+	t.Log.Info(elapsedTimeStr)
 	if err != nil {
-		Log.Error(" => %v", err)
+		t.Log.Error(" => %v", err)
 		t.ExitWithError()
 	}
 }
 
 func (t *TaskRunner) executeInDir(dir string, commandStr string, envs ...string) (string, error) {
 	shortDir := strings.Replace(dir, t.Config.parentDir, "", -1)
-	Log.Info("in directory '.%s', executing '%s'", shortDir, commandStr)
+	t.Log.Info("in directory '.%s', executing '%s'", shortDir, commandStr)
 
 	cmd := platform.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
@@ -77,7 +79,7 @@ func (t *TaskRunner) executeInDir(dir string, commandStr string, envs ...string)
 	if err != nil {
 		return elapsedTimeSummary, fmt.Errorf("command failed with error: %v", err)
 	} else {
-		Log.Info(" => Command successful.")
+		t.Log.Info(" => Command successful.")
 		return elapsedTimeSummary, nil
 	}
 }

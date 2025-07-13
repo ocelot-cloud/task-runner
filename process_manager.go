@@ -3,7 +3,6 @@ package tr
 import (
 	"fmt"
 	"github.com/ocelot-cloud/task-runner/platform"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -72,8 +71,9 @@ func Cleanup() {
 	if CustomCleanupFunc != nil {
 		CustomCleanupFunc()
 	}
-	fmt.Print("\x1b[?25h")
-	fmt.Print("\x1b[0m")
+	// TODO if that is needed, explain why
+	fmt.Print("\x1b[?25h") // Shows the terminal cursor again if it was hidden.
+	fmt.Print("\x1b[0m")   // Resets all terminal text attributes (color, bold, underline) back to default.
 }
 
 func exitWithError() {
@@ -95,7 +95,7 @@ func killDaemonProcessesCreateDuringThisRun() {
 	for _, pid := range idsOfDaemonProcessesCreatedDuringThisRun {
 		logImpl.Info("  Killing process with ID '%v'\n", pid)
 		if err := platform.KillProcessGroup(pid); err != nil {
-			log.Fatalf("Failed to kill process with ID '%v' because of error: %v\n", pid, err)
+			logImpl.Error("Failed to kill process with ID '%v' because of error: %v\n", pid, err)
 		}
 	}
 	idsOfDaemonProcessesCreatedDuringThisRun = nil

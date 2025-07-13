@@ -2,7 +2,7 @@ package tr
 
 import (
 	"fmt"
-	platform2 "github.com/ocelot-cloud/task-runner/platform"
+	"github.com/ocelot-cloud/task-runner/platform"
 	"log"
 	"os"
 	"os/exec"
@@ -10,18 +10,17 @@ import (
 	"syscall"
 )
 
+// TODO name should be casual "cleanup" function?
 var CustomCleanupFunc = func() {
 	// Do nothing. This function is meant to be overridden by the user if needed.
 }
 
 var idsOfDaemonProcessesCreatedDuringThisRun []int
 
-func StartDaemon(dir string, commandStr string, envs ...string) {
-	var cmd *exec.Cmd
-	cmd = platform2.BuildCommand(dir, commandStr)
+func StartDaemon(dir, commandStr string, envs ...string) {
+	cmd := platform.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
-
-	platform2.SetProcessGroup(cmd)
+	platform.SetProcessGroup(cmd)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -29,60 +28,87 @@ func StartDaemon(dir string, commandStr string, envs ...string) {
 	err := cmd.Start()
 
 	if cmd.Process == nil {
-		fmt.Printf("Error: The process was not able to start properly.\n")
-		CleanupAndExitWithError()
-	} else {
-		idsOfDaemonProcessesCreatedDuringThisRun = append(idsOfDaemonProcessesCreatedDuringThisRun, cmd.Process.Pid)
-	}
-
-	if err != nil {
-		fmt.Printf("Command: '%s' -> failed with error: %v\n", commandStr, err)
-		CleanupAndExitWithError()
-	} else {
-		ColoredPrintln("Started daemon with ID '%v' using command '%s'\n", cmd.Process.Pid, commandStr)
-		go func() {
-			err := cmd.Wait()
-			if err != nil {
-				fmt.Printf("Command: '%s' -> reason of stopping: %v\n", commandStr, err)
-			} else {
-				fmt.Printf("Command: '%s' -> stopped through casual termination\n", commandStr)
-			}
-		}()
-	}
-}
-
-func Cleanup() {
-	ColoredPrintln("Cleanup method called.\n")
-	killDaemonProcessesCreateDuringThisRun()
-	CustomCleanupFunc()
-	fmt.Print("\x1b[?25h") // Ensure CLI cursor is visible
-	fmt.Print("\x1b[0m")   // Resets all CLI cursor attributes such as color
-}
-
-func killDaemonProcessesCreateDuringThisRun() {
-	println("Killing daemon processes")
-	if len(idsOfDaemonProcessesCreatedDuringThisRun) == 0 {
-		fmt.Println("  No daemon processes to kill.")
+		logImpl.Error("Error: The process was not able to start properly.\n")
+		exitWithError()
 		return
 	}
 
-	for _, processID := range idsOfDaemonProcessesCreatedDuringThisRun {
-		fmt.Printf("  Killing process with ID '%v'\n", processID)
-		if err := platform2.KillProcessGroup(processID); err != nil {
-			log.Fatalf("Failed to kill process with ID '%v' because of error: %v\n", processID, err)
-		}
+	idsOfDaemonProcessesCreatedDuringThisRun = append(idsOfDaemonProcessesCreatedDuringThisRun, cmd.Process.Pid)
+
+	if err != nil {
+		logImpl.Error("Command: '%s' -> failed with error: %v\n", commandStr, err)
+		exitWithError()
+		return
 	}
-	idsOfDaemonProcessesCreatedDuringThisRun = make([]int, 0)
+
+	logImpl.Info("Started daemon with ID '%v' using command '%s'\n", cmd.Process.Pid, commandStr)
+
+	go func() {
+		if err := cmd.Wait(); err != nil {
+			logImpl.Error("Command: '%s' -> reason of stopping: %v\n", commandStr, err)
+		} else {
+			logImpl.Info("Command: '%s' -> stopped through casual termination\n", commandStr)
+		}
+	}()
 }
 
-func CleanupAndExitWithError() {
-	Cleanup()
+type config struct {
+	CleanupOnFailure  bool
+	ShowCleanupOutput bool
+}
+
+var cfg = config{
+	CleanupOnFailure:  true,
+	ShowCleanupOutput: true,
+}
+
+func HideCleanupOutput() { cfg.ShowCleanupOutput = false }
+
+func Cleanup() {
+	if cfg.ShowCleanupOutput {
+		logImpl.Info("Cleanup method called.\n")
+	}
+	killDaemonProcessesCreateDuringThisRun()
+	if CustomCleanupFunc != nil {
+		CustomCleanupFunc()
+	}
+	fmt.Print("\x1b[?25h")
+	fmt.Print("\x1b[0m")
+}
+
+func exitWithError() {
+	if cfg.CleanupOnFailure && CustomCleanupFunc != nil {
+		Cleanup()
+	} else {
+		killDaemonProcessesCreateDuringThisRun()
+		fmt.Print("\x1b[?25h")
+		fmt.Print("\x1b[0m")
+	}
 	os.Exit(1)
+}
+
+func killDaemonProcessesCreateDuringThisRun() {
+	if len(idsOfDaemonProcessesCreatedDuringThisRun) == 0 {
+		return
+	}
+	logImpl.Info("Killing daemon processes\n")
+	for _, pid := range idsOfDaemonProcessesCreatedDuringThisRun {
+		logImpl.Info("  Killing process with ID '%v'\n", pid)
+		if err := platform.KillProcessGroup(pid); err != nil {
+			log.Fatalf("Failed to kill process with ID '%v' because of error: %v\n", pid, err)
+		}
+	}
+	idsOfDaemonProcessesCreatedDuringThisRun = nil
 }
 
 func appendEnvsToCommand(cmd *exec.Cmd, envs []string) {
 	envsWithLogLevel := append(envs, DefaultEnvs...)
 	cmd.Env = append(os.Environ(), envsWithLogLevel...)
+}
+
+func CleanupAndExitWithError() {
+	Cleanup()
+	os.Exit(1)
 }
 
 var DefaultEnvs []string
@@ -92,7 +118,7 @@ func HandleSignals() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 		sig := <-sigChan
-		ColoredPrintln("\nReceived signal: %v. Initiating graceful shutdown...\n", sig)
+		logImpl.Info("\nReceived signal: %v. Initiating graceful shutdown...\n", sig)
 		Cleanup()
 		os.Exit(1)
 	}()

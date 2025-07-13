@@ -18,7 +18,7 @@ func TestCleanup(t *testing.T) {
 }
 
 func killProcesses(processes []string) {
-	processKillCommandTemplate := "pgrep -f %s | xargs -I %% kill -9 %%" // TODO get rid of linux dependency
+	processKillCommandTemplate := "pgrep -f %s | xargs -I %% kill -9 %%"
 	var processKillCommands []string
 	for _, process := range processes {
 		command := fmt.Sprintf(processKillCommandTemplate, process)
@@ -29,7 +29,7 @@ func killProcesses(processes []string) {
 }
 
 func assertThatNoProcessesSurvived(processes []string) {
-	cmd := exec.Command("ps", "aux") // TODO get rid of linux dependency
+	cmd := exec.Command("ps", "aux")
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()

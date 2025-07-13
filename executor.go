@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -134,4 +135,19 @@ func PromptForContinuation(prompt string) {
 		fmt.Println("Command aborted.")
 		os.Exit(0)
 	}
+}
+
+func runShellCommands(commands []string) {
+	for _, command := range commands {
+		_ = exec.Command("/bin/sh", "-c", command).Run()
+	}
+}
+
+func CleanupDockerArtifacts() {
+	dockerPruningCommands := []string{
+		"docker rm -f $(docker ps -a -q)",
+		"docker network prune -f",
+		"docker volume prune -a -f",
+		"docker image prune -f"}
+	runShellCommands(dockerPruningCommands)
 }

@@ -1,5 +1,4 @@
-// This is primarily a test for the CI pipeline, so there is no need for Windows developers to run it.
-//go:build linux
+//go:build integration
 
 package tr
 

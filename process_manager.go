@@ -3,7 +3,6 @@ package taskrunner
 import (
 	"fmt"
 	"github.com/ocelot-cloud/task-runner/platform"
-	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -22,7 +21,7 @@ func (t *TaskRunner) StartDaemon(dir, commandStr string, envs ...string) {
 
 	if cmd.Process == nil {
 		t.Log.Error("error - the process was not able to start properly.")
-		t.exitWithError()
+		t.ExitWithError()
 		return
 	}
 
@@ -30,7 +29,7 @@ func (t *TaskRunner) StartDaemon(dir, commandStr string, envs ...string) {
 
 	if err != nil {
 		t.Log.Error("Command: '%s' -> failed with error: %v", commandStr, err)
-		t.exitWithError()
+		t.ExitWithError()
 		return
 	}
 
@@ -47,16 +46,17 @@ func (t *TaskRunner) StartDaemon(dir, commandStr string, envs ...string) {
 
 func (t *TaskRunner) Cleanup() {
 	if t.Config.ShowCleanupOutput {
-		t.Log.Info("Cleanup method called.")
+		t.Log.Info("\ncleanup method called")
 	}
 	t.killDaemonProcessesCreateDuringThisRun()
 	if t.Config.CleanupFunc != nil {
+		t.Log.Info("calling custom cleanup function")
 		t.Config.CleanupFunc()
 	}
 	t.ResetCursor()
 }
 
-func (t *TaskRunner) exitWithError() {
+func (t *TaskRunner) ExitWithError() {
 	if t.Config.CleanupOnFailure && t.Config.CleanupFunc != nil {
 		t.Cleanup()
 	} else {
@@ -88,20 +88,6 @@ func (t *TaskRunner) killDaemonProcessesCreateDuringThisRun() {
 func appendEnvsToCommand(cmd *exec.Cmd, envs []string) {
 	envsWithLogLevel := append(envs, DefaultEnvs...)
 	cmd.Env = append(os.Environ(), envsWithLogLevel...)
-}
-
-func (t *TaskRunner) ExitWithError() {
-	t.Cleanup()
-	os.Exit(1)
-}
-
-// TODO replace OS references with this interface
-type OperatingSystem interface {
-	BuildCommand(dir, commandStr string) *exec.Cmd
-	KillProcessGroup(pid int) error
-	SetProcessGroup(cmd *exec.Cmd)
-	GetOsOutputs() (stdout, stderr io.Writer)
-	GetOsEnvs() []string
 }
 
 var DefaultEnvs []string

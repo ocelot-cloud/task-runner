@@ -1,0 +1,7 @@
+packages:
+  github.com/ocelot-cloud/task-runner:
+    interfaces:
+      OperatingSystem:
+        config:
+          filename: operating_system_mock.go
+          structname: OperatingSystemMock

@@ -2,3 +2,4 @@
 test.txt
 sample-dir
 temp**
+*_mock.go

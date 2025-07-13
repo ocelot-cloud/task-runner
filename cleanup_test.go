@@ -2,7 +2,6 @@ package tr
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os/exec"
 	"strings"
@@ -12,20 +11,9 @@ import (
 
 func TestCleanup(t *testing.T) {
 	StartDaemon(".", "sleep 10")
-	killProcesses([]string{"sleep"})
+	Cleanup()
 	assertThatNoProcessesSurvived([]string{"sleep 10"})
 	idsOfDaemonProcessesCreatedDuringThisRun = []int{}
-}
-
-func killProcesses(processes []string) {
-	processKillCommandTemplate := "pgrep -f %s | xargs -I %% kill -9 %%"
-	var processKillCommands []string
-	for _, process := range processes {
-		command := fmt.Sprintf(processKillCommandTemplate, process)
-		processKillCommands = append(processKillCommands, command)
-	}
-	runShellCommands(processKillCommands)
-	assertThatNoProcessesSurvived(processes)
 }
 
 func assertThatNoProcessesSurvived(processes []string) {

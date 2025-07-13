@@ -1,6 +1,6 @@
 //go:build integration
 
-package tr
+package taskrunner
 
 import (
 	"bytes"
@@ -12,10 +12,11 @@ import (
 )
 
 func TestCleanup(t *testing.T) {
-	StartDaemon(".", "sleep 10")
-	Cleanup()
+	tr := GetTaskRunner()
+	tr.StartDaemon(".", "sleep 10")
+	tr.Cleanup()
 	assertThatNoProcessesSurvived([]string{"sleep 10"})
-	idsOfDaemonProcessesCreatedDuringThisRun = []int{}
+	tr.Config.idsOfDaemonProcessesCreated = []int{}
 }
 
 func assertThatNoProcessesSurvived(processes []string) {
@@ -33,7 +34,7 @@ func assertThatNoProcessesSurvived(processes []string) {
 			}
 			if i == 4 {
 				Log.Error("the daemon process was not killed after tests were completed")
-				ExitWithError()
+				tr.ExitWithError()
 			}
 			time.Sleep(1 * time.Second)
 		}

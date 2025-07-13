@@ -1,4 +1,4 @@
-package tr
+package taskrunner
 
 import (
 	"fmt"

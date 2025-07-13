@@ -1,4 +1,4 @@
-package tr
+package taskrunner
 
 import (
 	"io"
@@ -6,34 +6,34 @@ import (
 	"path/filepath"
 )
 
-func Copy(srcDir, fileName, destFolder string) {
+func (t *TaskRunner) Copy(srcDir, fileName, destFolder string) {
 	src := filepath.Join(srcDir, fileName)
 	dest := filepath.Join(destFolder, fileName)
 
 	info, err := os.Stat(src)
 	if err != nil {
 		Log.Error("error stating %s: %v", src, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 
 	if info.IsDir() {
-		copyDir(src, dest)
+		t.copyDir(src, dest)
 	} else {
-		copyFile(src, dest)
+		t.copyFile(src, dest)
 	}
 }
 
-func copyFile(src, dest string) {
+func (t *TaskRunner) copyFile(src, dest string) {
 	info, err := os.Stat(src)
 	if err != nil {
 		Log.Error("error stating %s: %v", src, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 
 	input, err := os.Open(src)
 	if err != nil {
 		Log.Error("error opening %s: %v", src, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 	defer input.Close()
 
@@ -41,42 +41,42 @@ func copyFile(src, dest string) {
 	err = os.MkdirAll(destDir, 0700)
 	if err != nil {
 		Log.Error("error creating directory %s: %v", destDir, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 
 	output, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
 	if err != nil {
 		Log.Error("error creating %s: %v", dest, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 	defer output.Close()
 
 	_, err = io.Copy(output, input)
 	if err != nil {
 		Log.Error("error copying from %s to %s: %v", src, dest, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 
 	_ = os.Chmod(dest, info.Mode())
 }
 
-func copyDir(srcDir, destDir string) {
+func (t *TaskRunner) copyDir(srcDir, destDir string) {
 	srcInfo, err := os.Stat(srcDir)
 	if err != nil {
 		Log.Error("error stating %s: %v", srcDir, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 
 	err = os.MkdirAll(destDir, srcInfo.Mode())
 	if err != nil {
 		Log.Error("error creating directory %s: %v", destDir, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 
 	entries, err := os.ReadDir(srcDir)
 	if err != nil {
 		Log.Error("error reading directory %s: %v", srcDir, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 
 	for _, entry := range entries {
@@ -84,16 +84,16 @@ func copyDir(srcDir, destDir string) {
 		destPath := filepath.Join(destDir, entry.Name())
 
 		if entry.IsDir() {
-			copyDir(srcPath, destPath)
+			t.copyDir(srcPath, destPath)
 		} else {
-			copyFile(srcPath, destPath)
+			t.copyFile(srcPath, destPath)
 		}
 	}
 
 	_ = os.Chmod(destDir, srcInfo.Mode())
 }
 
-func Remove(paths ...string) {
+func (t *TaskRunner) Remove(paths ...string) {
 	for _, path := range paths {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			continue
@@ -101,33 +101,33 @@ func Remove(paths ...string) {
 		err := os.RemoveAll(path)
 		if err != nil {
 			Log.Error("Error removing %s: %v", path, err)
-			ExitWithError()
+			t.ExitWithError()
 		}
 	}
 }
 
-func MakeDir(dir string) {
+func (t *TaskRunner) MakeDir(dir string) {
 	err := os.MkdirAll(dir, 0700)
 	if err != nil {
 		Log.Error("Error creating %s: %v", dir, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 }
 
-func Move(src, dest string) {
+func (t *TaskRunner) Move(src, dest string) {
 	err := os.Rename(src, dest)
 	if err != nil {
 		Log.Error("error renaming %s to %s: %v", src, dest, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 }
 
-func Rename(dir, currentFileName, newFileName string) {
+func (t *TaskRunner) Rename(dir, currentFileName, newFileName string) {
 	src := filepath.Join(dir, currentFileName)
 	dest := filepath.Join(dir, newFileName)
 	err := os.Rename(src, dest)
 	if err != nil {
 		Log.Error("error renaming %s to %s: %v", src, dest, err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 }

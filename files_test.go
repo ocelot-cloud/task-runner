@@ -1,6 +1,6 @@
 //go:build integration
 
-package tr
+package taskrunner
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -9,15 +9,15 @@ import (
 )
 
 func TestDirCopy(t *testing.T) {
-	defer Remove(tmpDir)
-	MakeDir(tmpDir)
+	defer tr.Remove(tmpDir)
+	tr.MakeDir(tmpDir)
 	assert.True(t, checkIfExists(tmpDir))
-	ExecuteInDir(tmpDir, "touch test.txt")
+	tr.ExecuteInDir(tmpDir, "touch test.txt")
 	assert.True(t, checkIfExists(tmpDir+"/test.txt"))
 
-	defer Remove(tmpDir2)
-	MakeDir(tmpDir2)
-	Copy(".", "temp", tmpDir2)
+	defer tr.Remove(tmpDir2)
+	tr.MakeDir(tmpDir2)
+	tr.Copy(".", "temp", tmpDir2)
 	assert.True(t, checkIfExists(tmpDir))
 	assert.True(t, checkIfExists("temp2/"+tmpDir))
 	assert.True(t, checkIfExists("temp2/"+tmpDir+"/test.txt"))
@@ -32,17 +32,17 @@ func TestDirCopy(t *testing.T) {
 }
 
 func TestDirMove(t *testing.T) {
-	defer Remove(tmpDir)
-	MakeDir(tmpDir)
+	defer tr.Remove(tmpDir)
+	tr.MakeDir(tmpDir)
 	assert.True(t, checkIfExists(tmpDir))
-	ExecuteInDir(tmpDir, "touch test.txt")
+	tr.ExecuteInDir(tmpDir, "touch test.txt")
 	assert.True(t, checkIfExists(tmpDir+"/test.txt"))
 
 	srcInfo, _ := os.Stat(tmpDir)
 	srcFileInfo, _ := os.Stat(tmpDir + "/test.txt")
 
-	defer Remove(tmpDir2)
-	Move(tmpDir, tmpDir2)
+	defer tr.Remove(tmpDir2)
+	tr.Move(tmpDir, tmpDir2)
 	assert.False(t, checkIfExists(tmpDir))
 	assert.True(t, checkIfExists("temp2"))
 	assert.True(t, checkIfExists("temp2/test.txt"))
@@ -54,16 +54,16 @@ func TestDirMove(t *testing.T) {
 }
 
 func TestRename(t *testing.T) {
-	defer Remove(tmpDir)
-	MakeDir(tmpDir)
-	ExecuteInDir(tmpDir, "touch test.txt")
+	defer tr.Remove(tmpDir)
+	tr.MakeDir(tmpDir)
+	tr.ExecuteInDir(tmpDir, "touch test.txt")
 	assert.True(t, checkIfExists(tmpDir+"/test.txt"))
 	assert.False(t, checkIfExists(tmpDir+"/test2.txt"))
 
 	origInfo, _ := os.Stat(tmpDir + "/test.txt")
 	origMode := origInfo.Mode()
 
-	Rename(tmpDir, "test.txt", "test2.txt")
+	tr.Rename(tmpDir, "test.txt", "test2.txt")
 	assert.False(t, checkIfExists(tmpDir+"/test.txt"))
 	assert.True(t, checkIfExists(tmpDir+"/test2.txt"))
 

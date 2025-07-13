@@ -1,4 +1,4 @@
-package tr
+package taskrunner
 
 import (
 	"bytes"
@@ -12,7 +12,31 @@ import (
 	"time"
 )
 
-var parentDir = getParentDir()
+func GetTaskRunner() *TaskRunner {
+	return &TaskRunner{
+		Config: &Config{
+			CleanupOnFailure:            true,
+			ShowCleanupOutput:           true,
+			CleanupFunc:                 nil,
+			DefaultEnvironmentVariables: []string{},
+			idsOfDaemonProcessesCreated: []int{},
+			parentDir:                   getParentDir(),
+		},
+	}
+}
+
+type TaskRunner struct {
+	Config *Config
+}
+
+type Config struct {
+	CleanupOnFailure            bool
+	ShowCleanupOutput           bool
+	CleanupFunc                 func()
+	DefaultEnvironmentVariables []string
+	idsOfDaemonProcessesCreated []int
+	parentDir                   string
+}
 
 func getParentDir() string {
 	currentDir, err := os.Getwd()
@@ -22,17 +46,17 @@ func getParentDir() string {
 	return filepath.Dir(currentDir)
 }
 
-func ExecuteInDir(dir string, commandStr string, envs ...string) {
-	elapsedTimeStr, err := executeInDir(dir, commandStr, envs...)
+func (t *TaskRunner) ExecuteInDir(dir string, commandStr string, envs ...string) {
+	elapsedTimeStr, err := t.executeInDir(dir, commandStr, envs...)
 	Log.Info(elapsedTimeStr)
 	if err != nil {
 		Log.Error(" => %v", err)
-		ExitWithError()
+		t.ExitWithError()
 	}
 }
 
-func executeInDir(dir string, commandStr string, envs ...string) (string, error) {
-	shortDir := strings.Replace(dir, parentDir, "", -1)
+func (t *TaskRunner) executeInDir(dir string, commandStr string, envs ...string) (string, error) {
+	shortDir := strings.Replace(dir, t.Config.parentDir, "", -1)
 	Log.Info("in directory '.%s', executing '%s'", shortDir, commandStr)
 
 	cmd := platform.BuildCommand(dir, commandStr)
@@ -58,11 +82,11 @@ func executeInDir(dir string, commandStr string, envs ...string) (string, error)
 	}
 }
 
-func Execute(commandStr string, envs ...string) {
-	ExecuteInDir(".", commandStr, envs...)
+func (t *TaskRunner) Execute(commandStr string, envs ...string) {
+	t.ExecuteInDir(".", commandStr, envs...)
 }
 
-func PromptForContinuation(prompt string) {
+func (t *TaskRunner) PromptForContinuation(prompt string) {
 	fmt.Printf("%s (y/N): ", prompt)
 	var response string
 	fmt.Scanln(&response)

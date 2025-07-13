@@ -1,4 +1,4 @@
-package tr
+package taskrunner
 
 import (
 	"net"
@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func WaitUntilPortIsReady(port string) {
-	retryOperation(func() (bool, error) {
+func (t *TaskRunner) WaitUntilPortIsReady(port string) {
+	t.retryOperation(func() (bool, error) {
 		conn, err := net.DialTimeout("tcp", "localhost:"+port, 1*time.Second)
 		if err == nil {
 			conn.Close()
@@ -18,7 +18,7 @@ func WaitUntilPortIsReady(port string) {
 	}, "port", "localhost:"+port, 30)
 }
 
-func retryOperation(operation func() (bool, error), description, target string, maxAttempts int) {
+func (t *TaskRunner) retryOperation(operation func() (bool, error), description, target string, maxAttempts int) {
 	attempt := 0
 	for attempt < maxAttempts {
 		success, err := operation()
@@ -34,11 +34,11 @@ func retryOperation(operation func() (bool, error), description, target string, 
 		}
 	}
 	Log.Error("error: %s could not be reached in time at %s. Cleanup and exit...", description, target)
-	ExitWithError()
+	t.ExitWithError()
 }
 
-func WaitForWebPageToBeReady(targetUrl string) {
-	retryOperation(func() (bool, error) {
+func (t *TaskRunner) WaitForWebPageToBeReady(targetUrl string) {
+	t.retryOperation(func() (bool, error) {
 		parsedURL, err := url.Parse(targetUrl)
 		if err != nil {
 			return false, err

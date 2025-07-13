@@ -10,7 +10,7 @@ import (
 )
 
 func KillProcesses(processes []string) {
-	processKillCommandTemplate := "pgrep -f %s | xargs -I %% kill -9 %%"
+	processKillCommandTemplate := "pgrep -f %s | xargs -I %% kill -9 %%" // TODO get rid of linux dependency
 	var processKillCommands []string
 	for _, process := range processes {
 		command := fmt.Sprintf(processKillCommandTemplate, process)
@@ -36,7 +36,7 @@ func CleanupDockerArtifacts() {
 }
 
 func assertThatNoProcessesSurvived(processes []string) {
-	cmd := exec.Command("ps", "aux")
+	cmd := exec.Command("ps", "aux") // TODO get rid of linux dependency
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()

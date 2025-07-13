@@ -6,9 +6,6 @@ import (
 	"github.com/ocelot-cloud/task-runner/platform"
 	"io"
 	"log"
-	"net"
-	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,16 +24,16 @@ func getParentDir() string {
 
 func ExecuteInDir(dir string, commandStr string, envs ...string) {
 	elapsedTimeStr, err := executeInDir(dir, commandStr, envs...)
-	ColoredPrintln(elapsedTimeStr)
+	Log.Info(elapsedTimeStr)
 	if err != nil {
-		ColoredPrintln(" => %v", err)
-		CleanupAndExitWithError()
+		Log.Error(" => %v", err)
+		ExitWithError()
 	}
 }
 
 func executeInDir(dir string, commandStr string, envs ...string) (string, error) {
 	shortDir := strings.Replace(dir, parentDir, "", -1)
-	ColoredPrintln("\nIn directory '.%s', executing '%s'\n", shortDir, commandStr)
+	Log.Info("in directory '.%s', executing '%s'", shortDir, commandStr)
 
 	cmd := platform.BuildCommand(dir, commandStr)
 	appendEnvsToCommand(cmd, envs)
@@ -56,74 +53,13 @@ func executeInDir(dir string, commandStr string, envs ...string) (string, error)
 	if err != nil {
 		return elapsedTimeSummary, fmt.Errorf("command failed with error: %v", err)
 	} else {
-		ColoredPrintln(" => Command successful.")
+		Log.Info(" => Command successful.")
 		return elapsedTimeSummary, nil
 	}
 }
 
 func Execute(commandStr string, envs ...string) {
 	ExecuteInDir(".", commandStr, envs...)
-}
-
-func ColoredPrintln(format string, a ...interface{}) {
-	colorReset := "\033[0m"
-	colorCode := "\033[31m"
-	fmt.Printf(colorCode+format+"\n"+colorReset, a...)
-}
-
-func WaitUntilPortIsReady(port string) {
-	retryOperation(func() (bool, error) {
-		conn, err := net.DialTimeout("tcp", "localhost:"+port, 1*time.Second)
-		if err == nil {
-			conn.Close()
-			return true, nil
-		}
-		return false, err
-	}, "port", "localhost:"+port, 30)
-}
-
-func retryOperation(operation func() (bool, error), description, target string, maxAttempts int) {
-	attempt := 0
-	for attempt < maxAttempts {
-		success, err := operation()
-		if success && err == nil {
-			fmt.Printf("%s was requested successfully at %s\n", description, target)
-			return
-		} else {
-			if attempt%5 == 0 {
-				fmt.Printf("Attempt %v/%v: %s is not yet reachable at %s. error: %v. Trying again...\n", attempt, maxAttempts, description, target, err)
-			}
-			attempt++
-			time.Sleep(1 * time.Second)
-		}
-	}
-	fmt.Printf("Error: %s could not be reached in time at %s. Cleanup and exit...\n", description, target)
-	CleanupAndExitWithError()
-}
-
-func WaitForWebPageToBeReady(targetUrl string) {
-	retryOperation(func() (bool, error) {
-		parsedURL, err := url.Parse(targetUrl)
-		if err != nil {
-			return false, err
-		}
-
-		req, err := http.NewRequest("GET", targetUrl, nil)
-		if err != nil {
-			return false, err
-		}
-		req.Header.Set("Origin", parsedURL.Scheme+"://"+parsedURL.Host)
-
-		response, err := http.DefaultClient.Do(req)
-		if err == nil && response.StatusCode == 200 {
-			return true, nil
-		}
-		return false, err
-	}, "Index page", targetUrl, 60)
-}
-
-func PrintTaskDescription(text string) {
-	ColoredPrintln("\n==== %s ====\n", text)
 }
 
 func PromptForContinuation(prompt string) {

@@ -10,10 +10,8 @@ import (
 	"syscall"
 )
 
-// TODO name should be casual "cleanup" function?
-var CustomCleanupFunc = func() {
-	// Do nothing. This function is meant to be overridden by the user if needed.
-}
+// Do nothing. This function is meant to be overridden by the user if needed.
+var CustomCleanupFunc func()
 
 var idsOfDaemonProcessesCreatedDuringThisRun []int
 
@@ -28,7 +26,7 @@ func StartDaemon(dir, commandStr string, envs ...string) {
 	err := cmd.Start()
 
 	if cmd.Process == nil {
-		Log.Error("Error: The process was not able to start properly.\n")
+		Log.Error("error - the process was not able to start properly.")
 		exitWithError()
 		return
 	}
@@ -36,18 +34,18 @@ func StartDaemon(dir, commandStr string, envs ...string) {
 	idsOfDaemonProcessesCreatedDuringThisRun = append(idsOfDaemonProcessesCreatedDuringThisRun, cmd.Process.Pid)
 
 	if err != nil {
-		Log.Error("Command: '%s' -> failed with error: %v\n", commandStr, err)
+		Log.Error("Command: '%s' -> failed with error: %v", commandStr, err)
 		exitWithError()
 		return
 	}
 
-	Log.Info("Started daemon with ID '%v' using command '%s'\n", cmd.Process.Pid, commandStr)
+	Log.Info("started daemon with ID '%v' using command '%s'", cmd.Process.Pid, commandStr)
 
 	go func() {
 		if err := cmd.Wait(); err != nil {
-			Log.Error("Command: '%s' -> reason of stopping: %v\n", commandStr, err)
+			Log.Error("command: '%s' -> reason of stopping: %v", commandStr, err)
 		} else {
-			Log.Info("Command: '%s' -> stopped through casual termination\n", commandStr)
+			Log.Info("command: '%s' -> stopped through casual termination", commandStr)
 		}
 	}()
 }
@@ -66,16 +64,13 @@ func HideCleanupOutput() { cfg.ShowCleanupOutput = false }
 
 func Cleanup() {
 	if cfg.ShowCleanupOutput {
-		Log.Info("Cleanup method called.\n")
+		Log.Info("Cleanup method called.")
 	}
 	killDaemonProcessesCreateDuringThisRun()
 	if CustomCleanupFunc != nil {
 		CustomCleanupFunc()
 	}
-
-	// TODO if that is needed, explain why -> I thikn this should always be executed at the end of the program, but how to ensure that? -> maybe tell the user to call "defer ResetCursor()" in their main function?
-	fmt.Print("\x1b[?25h") // Shows the terminal cursor again if it was hidden.
-	fmt.Print("\x1b[0m")   // Resets all terminal text attributes (color, bold, underline) back to default.
+	ResetCursor()
 }
 
 func exitWithError() {
@@ -83,22 +78,25 @@ func exitWithError() {
 		Cleanup()
 	} else {
 		killDaemonProcessesCreateDuringThisRun()
-		// TODO explain why this is needed? Maybe abstract duplication
-		fmt.Print("\x1b[?25h")
-		fmt.Print("\x1b[0m")
 	}
+	ResetCursor()
 	os.Exit(1)
+}
+
+func ResetCursor() {
+	fmt.Print("\x1b[?25h") // Shows the terminal cursor again if it was hidden.
+	fmt.Print("\x1b[0m")   // Resets all terminal text attributes (color, bold, underline) back to default.
 }
 
 func killDaemonProcessesCreateDuringThisRun() {
 	if len(idsOfDaemonProcessesCreatedDuringThisRun) == 0 {
 		return
 	}
-	Log.Info("Killing daemon processes\n")
+	Log.Info("Killing daemon processes")
 	for _, pid := range idsOfDaemonProcessesCreatedDuringThisRun {
-		Log.Info("  Killing process with ID '%v'\n", pid)
+		Log.Info("  Killing process with ID '%v'", pid)
 		if err := platform.KillProcessGroup(pid); err != nil {
-			Log.Error("Failed to kill process with ID '%v' because of error: %v\n", pid, err)
+			Log.Error("Failed to kill process with ID '%v' because of error: %v", pid, err)
 		}
 	}
 	idsOfDaemonProcessesCreatedDuringThisRun = nil
@@ -109,8 +107,7 @@ func appendEnvsToCommand(cmd *exec.Cmd, envs []string) {
 	cmd.Env = append(os.Environ(), envsWithLogLevel...)
 }
 
-// TODO maybe just "ExitWithError"? and cleanup is implicitly called?
-func CleanupAndExitWithError() {
+func ExitWithError() {
 	Cleanup()
 	os.Exit(1)
 }
@@ -131,7 +128,7 @@ func HandleSignals() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 		sig := <-sigChan
-		Log.Info("\nReceived signal: %v. Initiating graceful shutdown...\n", sig)
+		Log.Info("Received signal: %v. Initiating graceful shutdown...", sig)
 		Cleanup()
 		os.Exit(1)
 	}()

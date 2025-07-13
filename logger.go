@@ -11,7 +11,7 @@ type logger interface {
 
 type consoleLogger struct{}
 
-func (consoleLogger) Info(f string, a ...any)  { fmt.Printf("\033[32m"+f+"\033[0m", a...) }
-func (consoleLogger) Error(f string, a ...any) { fmt.Printf("\033[31m"+f+"\033[0m", a...) }
+func (consoleLogger) Info(f string, a ...any)  { fmt.Printf("\033[32m"+f+"\033[0m\n", a...) }
+func (consoleLogger) Error(f string, a ...any) { fmt.Printf("\033[31m"+f+"\033[0m\n", a...) }
 
 var Log logger = consoleLogger{}

@@ -32,8 +32,8 @@ func assertThatNoProcessesSurvived(processes []string) {
 				break
 			}
 			if i == 4 {
-				ColoredPrintln("The daemon process was not killed after tests were completed.\n")
-				CleanupAndExitWithError()
+				Log.Error("the daemon process was not killed after tests were completed")
+				ExitWithError()
 			}
 			time.Sleep(1 * time.Second)
 		}

@@ -24,8 +24,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCommandSuccessful(t *testing.T) {
-	_, err := tr.executeInDir(sampleTestDir, "go test success_test.go")
-	assert.Nil(t, err)
+	tr.ExecuteInDir(sampleTestDir, "go test success_test.go")
 }
 
 func TestDirCreationAndDeletion(t *testing.T) {

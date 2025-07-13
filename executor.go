@@ -15,15 +15,6 @@ func (t *TaskRunner) KillProcesses(processSubStrings []string) {
 }
 
 func (t *TaskRunner) ExecuteInDir(dir string, commandStr string, envs ...string) {
-	elapsedTimeStr, err := t.executeInDir(dir, commandStr, envs...)
-	t.Log.Info(elapsedTimeStr)
-	if err != nil {
-		t.Log.Error(" => %v", err)
-		t.ExitWithError()
-	}
-}
-
-func (t *TaskRunner) executeInDir(dir string, commandStr string, envs ...string) (string, error) {
 	shortDir := strings.Replace(dir, t.Config.parentDir, "", -1)
 	t.Log.Info("in directory '.%s', executing '%s'", shortDir, commandStr)
 
@@ -43,10 +34,10 @@ func (t *TaskRunner) executeInDir(dir string, commandStr string, envs ...string)
 
 	elapsedTimeSummary := fmt.Sprintf("Time taken: %s seconds.", elapsedStr)
 	if err != nil {
-		return elapsedTimeSummary, fmt.Errorf("command failed with error: %v", err)
+		t.Log.Info(" => Command failed. %s. Error: %v", elapsedTimeSummary, err)
+		t.ExitWithError()
 	} else {
-		t.Log.Info(" => Command successful.")
-		return elapsedTimeSummary, nil
+		t.Log.Info(" => Command successful. %s", elapsedTimeSummary)
 	}
 }
 

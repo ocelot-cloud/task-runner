@@ -36,10 +36,14 @@ func (t *TaskRunner) StartDaemon(dir, commandStr string, envs ...string) {
 	t.Log.Info("started daemon with ID '%v' using command '%s'", cmd.Process.Pid, commandStr)
 
 	go func() {
-		if err := cmd.Wait(); err != nil {
-			t.Log.Error("command: '%s' -> reason of stopping: %v", commandStr, err)
+		if err = cmd.Wait(); err != nil {
+			if err.Error() == "signal: killed" {
+				t.Log.Info("command: '%s' -> stopped through cleanup process killing", commandStr)
+			} else {
+				t.Log.Error("command: '%s' -> stopped with error: %v", commandStr, err)
+			}
 		} else {
-			t.Log.Info("command: '%s' -> stopped through casual termination", commandStr)
+			t.Log.Info("command: '%s' -> stopped through termination", commandStr)
 		}
 	}()
 }

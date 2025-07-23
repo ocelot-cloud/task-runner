@@ -10,7 +10,6 @@ func GetTaskRunner() *TaskRunner {
 	return &TaskRunner{
 		Config: &Config{
 			CleanupOnFailure:            true,
-			ShowCleanupOutput:           true,
 			CleanupFunc:                 nil,
 			DefaultEnvironmentVariables: []string{},
 			idsOfDaemonProcessesCreated: []int{},
@@ -27,7 +26,6 @@ type TaskRunner struct {
 
 type Config struct {
 	CleanupOnFailure            bool
-	ShowCleanupOutput           bool
 	CleanupFunc                 func()
 	DefaultEnvironmentVariables []string
 	idsOfDaemonProcessesCreated []int
